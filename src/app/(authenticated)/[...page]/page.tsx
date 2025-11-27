@@ -36,11 +36,12 @@ async function fetchCatFact() {
   return data.fact;
 }
 
-export default async function UnknownPage({
-  params,
-}: {
-  params: { page: string };
-}) {
+export default async function UnknownPage(
+  props: {
+    params: Promise<{ page: string }>;
+  }
+) {
+  const params = await props.params;
   const catEmoji = getRandomCatEmoji();
   const catFact = await fetchCatFact();
 

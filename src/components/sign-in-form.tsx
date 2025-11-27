@@ -1,6 +1,7 @@
 'use client';
 
-import { useFormState, useFormStatus } from 'react-dom';
+import { useActionState } from "react";
+import { useFormStatus } from 'react-dom';
 import { signInAction } from '@/services/msEntraId';
 
 function SignInButton() {
@@ -13,7 +14,7 @@ function SignInButton() {
 }
 
 export function SignInForm() {
-  const [errorMessage, signIn] = useFormState(signInAction, undefined);
+  const [errorMessage, signIn] = useActionState(signInAction, undefined);
 
   return (
     <form action={signIn}>
