@@ -26,6 +26,7 @@ declare module 'next-auth' {
       image: string | null;  
     } & MicrosoftGraphUser;
     expires: string;
+    token: any;
   }
 
   interface User {
@@ -45,5 +46,8 @@ declare module 'next-auth/jwt' {
     iat: number;
     exp: number;
     jti: string;
+    accessToken: string;
+    accessTokenExpires: number;
+    refreshToken: string;
   }
 }

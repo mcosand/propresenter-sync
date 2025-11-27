@@ -1,4 +1,5 @@
 import { ROUTES } from "@/config/routes.config";
+import { SessionProvider } from "next-auth/react";
 
 export default function AuthenticatedLayout({
   children,
@@ -7,17 +8,9 @@ export default function AuthenticatedLayout({
 }>) {
   return (
     <main aria-label="Authenticated layout">
+      <SessionProvider>
       {children}
-      <p>
-        template by{" "}
-        <a
-          href={ROUTES.EXTERNAL.GITHUB}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          matt-wigg.
-        </a>
-      </p>
+      </SessionProvider>
     </main>
   );
 }

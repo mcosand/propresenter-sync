@@ -8,7 +8,7 @@ export function Logo({
   src?: StaticImageData | string;
 }) {
   return (
-    <figure className='w-24 h-24 mx-auto border relative overflow-hidden rounded-full'>
+    <figure className='w-24 h-24 mx-auto relative overflow-hidden'>
       <Image
         src={src}
         alt='Logo'

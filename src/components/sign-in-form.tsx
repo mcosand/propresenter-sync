@@ -7,7 +7,7 @@ function SignInButton() {
   const { pending } = useFormStatus();
   return (
     <button disabled={pending}>
-      {pending ? 'Signing in...' : 'Sign in with Microsoft Entra ID'}
+      {pending ? 'Signing in...' : 'Sign in to SharePoint'}
     </button>
   );
 }

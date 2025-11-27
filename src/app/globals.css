@@ -1,7 +1,7 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
+ 
 @layer components {
   .theme {
     @apply bg-blue-500 hover:bg-blue-600;
@@ -38,7 +38,7 @@
   }
 
   button {
-    @apply theme px-4 py-2 rounded min-w-72 text-center focus-state disabled-state hover-state;
+    @apply theme px-4 py-2 rounded min-w-72 text-center focus-state disabled-state hover-state text-white;
   }
 
   h1 {
