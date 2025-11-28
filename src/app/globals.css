@@ -73,11 +73,11 @@
 
 @layer base {
   body {
-    @apply flex h-screen items-center justify-center bg-black text-white;
+    @apply flex flex-col h-screen items-stretch justify-stretch bg-black text-white;
   }
 
   main {
-    @apply flex flex-col items-center space-y-3;
+    @apply flex flex-col items-stretch space-y-3;
   }
 
   /* a {

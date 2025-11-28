@@ -4,7 +4,7 @@ import { SignInForm } from '@/components/sign-in-form';
 
 export default function SignInPage() {
   return (
-    <main aria-label='Sign in page'>
+    <main className="flex flex-auto justify-center align-center text-center" aria-label='Sign in page'>
       <Logo src={logo} />
       <h1>BUMC ProPresenter Sync</h1>
       <SignInForm />
