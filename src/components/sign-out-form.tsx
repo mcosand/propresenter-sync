@@ -8,7 +8,7 @@ export async function SignOutForm() {
         await signOut();
       }}
     >
-      <button className='bg-red-500 hover:bg-red-600'>Sign out</button>
+      <button className='btn bg-red-500 hover:bg-red-600'>Sign out</button>
     </form>
   );
 }

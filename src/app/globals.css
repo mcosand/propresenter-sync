@@ -1,7 +1,53 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
- 
+@import "tailwindcss";
+@plugin "daisyui" {
+  themes: light --default, dark --prefersdark;
+};
+
+@plugin "daisyui/theme" {
+  name: "bumc-dark";
+  default: true; /* set as default */
+  prefersdark: true; /* set as default dark mode (prefers-color-scheme:dark) */
+  color-scheme: dark; /* color of browser-provided UI */
+
+  --color-base-100: rgb(24,24,24);
+  --color-base-200: rgb(48, 48, 48);
+  --color-base-300: oklch(92% 0.04 240);
+  --color-base-content: rgb(255,255,255);
+  --color-primary: oklch(55% 0.3 240);
+  --color-primary-content: oklch(98% 0.01 240);
+  --color-secondary: oklch(70% 0.25 200);
+  --color-secondary-content: oklch(98% 0.01 200);
+  --color-accent: oklch(65% 0.25 160);
+  --color-accent-content: oklch(98% 0.01 160);
+  --color-neutral: oklch(50% 0.05 240);
+  --color-neutral-content: oklch(98% 0.01 240);
+  --color-info: oklch(70% 0.2 220);
+  --color-info-content: oklch(98% 0.01 220);
+  --color-success: oklch(65% 0.25 140);
+  --color-success-content: oklch(98% 0.01 140);
+  --color-warning: oklch(80% 0.25 80);
+  --color-warning-content: oklch(20% 0.05 80);
+  --color-error: oklch(65% 0.3 30);
+  --color-error-content: oklch(98% 0.01 30);
+
+  /* border radius */
+  --radius-selector: 1rem;
+  --radius-field: 0.25rem;
+  --radius-box: 0.5rem;
+
+  /* base sizes */
+  --size-selector: 0.25rem;
+  --size-field: 0.25rem;
+
+  /* border size */
+  --border: 1px;
+
+  /* effects */
+  --depth: 1;
+  --noise: 0;
+}
+/*
+
 @layer components {
   .theme {
     @apply bg-blue-500 hover:bg-blue-600;
@@ -23,6 +69,7 @@
     @apply hover:underline underline-offset-4;
   }
 }
+*/
 
 @layer base {
   body {
@@ -33,13 +80,13 @@
     @apply flex flex-col items-center space-y-3;
   }
 
-  a {
-    @apply theme-text focus-state disabled-state hover-state;
+  /* a {
+    @apply disabled-state hover-state;
   }
 
   button {
-    @apply theme px-4 py-2 rounded min-w-72 text-center focus-state disabled-state hover-state text-white;
-  }
+    @apply px-4 py-2 rounded min-w-72 text-center disabled-state hover-state text-white;
+  } */
 
   h1 {
     @apply text-2xl font-bold;

@@ -7,7 +7,7 @@ import { signInAction } from '@/services/msEntraId';
 function SignInButton() {
   const { pending } = useFormStatus();
   return (
-    <button disabled={pending}>
+    <button disabled={pending} className="btn btn-primary">
       {pending ? 'Signing in...' : 'Sign in to SharePoint'}
     </button>
   );
