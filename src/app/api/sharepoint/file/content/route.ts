@@ -1,13 +1,12 @@
 "use server";
 
-import { authConfig } from "@/config/auth.config";
+import { getAccessToken } from "@/lib/api";
 import { getGraphClient, getSiteId } from "@/services/graph-helper";
-import { getToken } from "next-auth/jwt";
 import { NextResponse } from "next/server";
 
 export async function GET(req: Request) {
-  const token = await getToken({ req, secret: authConfig.secret });
-  if (!token) {
+  const accessToken = await getAccessToken(req);
+  if (!accessToken) {
     return NextResponse.json({ error: 'Must authenticate' }, { status: 401 });
   }
 
@@ -19,7 +18,6 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: 'No path provided' }, { status: 400 });
     }
 
-    const accessToken = token.accessToken;
     const client = getGraphClient(accessToken);
     const siteId = await getSiteId(accessToken, process.env.SHAREPOINT_SITE_URL!);
 
@@ -28,15 +26,12 @@ export async function GET(req: Request) {
       .api(`/sites/${siteId}/drive/root:/${encodedPath}:/content`)
       .getStream();
 
-
-  // const webStream = Readable.toWeb(stream);
-
-  return new NextResponse(stream, {
-    headers: {
-      "Content-Type": "application/octet-stream",
-      "Content-Disposition": `attachment; filename="${path.split('/').pop()}"`,
-    },
-  });
+    return new NextResponse(stream, {
+      headers: {
+        "Content-Type": "application/octet-stream",
+        "Content-Disposition": `attachment; filename="${path.split('/').pop()}"`,
+      },
+    });
   } catch (error: any) {
     console.error('File download error:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });
