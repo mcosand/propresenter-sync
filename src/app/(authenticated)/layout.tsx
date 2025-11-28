@@ -5,7 +5,8 @@ import { ProPresenterStore } from "@/services/propresenterStore";
 import { SessionProvider } from "next-auth/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
+
 
 export default function AuthenticatedLayout({
   children,
@@ -14,12 +15,10 @@ export default function AuthenticatedLayout({
 }>) {
   const pathname = usePathname();
 
-  const store = useMemo(() => {
-    console.log('instantiating store');
-    const s = new ProPresenterStore();
-    s.reload().catch(console.error);
-    return s;
-  }, []);
+  const store = useMemo(() => new ProPresenterStore(), []);
+  useEffect(() => {
+    store.reload().catch(console.error);
+  }, [store]);
 
   return (
     <>

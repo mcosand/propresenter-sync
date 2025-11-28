@@ -5,7 +5,7 @@ import { getGraphClient, getSiteId } from "@/services/graph-helper";
 import { getToken } from "next-auth/jwt";
 import { NextResponse } from "next/server";
 
-export async function GET(req: Request, res: Response) {
+export async function GET(req: Request) {
   const token = await getToken({ req, secret: authConfig.secret });
   if (!token) {
     return NextResponse.json({ error: 'Must authenticate' }, { status: 401 });

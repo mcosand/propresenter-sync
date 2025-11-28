@@ -9,14 +9,12 @@
     "lint": "eslint ."
   },
   "dependencies": {
-    "@microsoft/microsoft-graph-client": "^3.0.7",
-    "next": "16.0.5",
-    "next-auth": "^5.0.0-beta.30",
-    "react": "19.2.0",
-    "react-dom": "19.2.0"
+    "next": "16.0.5"
   },
   "devDependencies": {
+    "@microsoft/microsoft-graph-client": "^3.0.7",
     "@tailwindcss/postcss": "^4.1.17",
+    "@types/deep-equal": "^1.0.4",
     "@types/node": "^24",
     "@types/react": "19.2.7",
     "@types/react-dom": "19.2.3",
@@ -27,8 +25,11 @@
     "eslint-config-next": "16.0.5",
     "mobx": "^6.15.0",
     "mobx-react-lite": "^4.1.1",
+    "next-auth": "^5.0.0-beta.30",
     "postcss": "^8",
     "protobufjs": "^7.5.4",
+    "react": "19.2.0",
+    "react-dom": "19.2.0",
     "tailwindcss": "^4.1.17",
     "typescript": "^5"
   },

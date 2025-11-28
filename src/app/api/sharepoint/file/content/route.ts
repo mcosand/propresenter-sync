@@ -5,9 +5,7 @@ import { getGraphClient, getSiteId } from "@/services/graph-helper";
 import { getToken } from "next-auth/jwt";
 import { NextResponse } from "next/server";
 
-let driveId: string | undefined;
-
-export async function GET(req: Request, res: Response) {
+export async function GET(req: Request) {
   const token = await getToken({ req, secret: authConfig.secret });
   if (!token) {
     return NextResponse.json({ error: 'Must authenticate' }, { status: 401 });
@@ -31,12 +29,14 @@ export async function GET(req: Request, res: Response) {
       .getStream();
 
 
-    return new Response(stream as unknown as ReadableStream, {
-      headers: {
-        "Content-Type": "application/octet-stream",
-        "Content-Disposition": `attachment; filename="${path.split('/').pop()}"`,
-      },
-    });
+  // const webStream = Readable.toWeb(stream);
+
+  return new NextResponse(stream, {
+    headers: {
+      "Content-Type": "application/octet-stream",
+      "Content-Disposition": `attachment; filename="${path.split('/').pop()}"`,
+    },
+  });
   } catch (error: any) {
     console.error('File download error:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });
