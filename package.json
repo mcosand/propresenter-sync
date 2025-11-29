@@ -12,6 +12,7 @@
     "next": "16.0.5"
   },
   "devDependencies": {
+    "@heroicons/react": "^2.2.0",
     "@microsoft/microsoft-graph-client": "^3.0.7",
     "@tailwindcss/postcss": "^4.1.17",
     "@types/deep-equal": "^1.0.4",
@@ -30,6 +31,7 @@
     "protobufjs": "^7.5.4",
     "react": "19.2.0",
     "react-dom": "19.2.0",
+    "react-resizable-panels": "^3.0.6",
     "tailwindcss": "^4.1.17",
     "typescript": "^5"
   },
