@@ -8,7 +8,6 @@ import { PlaylistPreview } from '@/models/preview/playlistPreview';
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels';
 import DownstreamGuard from '@/components/DownstreamGuard';
 import { formatBytes, formatDateTime } from '@/lib/format';
-import { TransferDialog } from '@/components/playlists/TransferDialog';
 import { useStore } from '@/components/StoreProvider';
 import Link from 'next/link';
 import OutlineCloudIcon from '@heroicons/react/24/outline/CloudIcon';
@@ -16,8 +15,41 @@ import SolidCloudIcon from '@heroicons/react/24/solid/CloudIcon';
 import SolidCloudArrowIcon from '@heroicons/react/24/solid/CloudArrowUpIcon';
 import OutlineHomeIcon from '@heroicons/react/24/outline/HomeModernIcon';
 import SolidHomeIcon from '@heroicons/react/24/solid/HomeModernIcon';
+import FolderIcon from '@heroicons/react/24/outline/FolderIcon';
+import ListIcon from '@heroicons/react/24/outline/ListBulletIcon';
 
-const PlaylistNode = ({ item, prefix, }: { item: proto.rv.data.IPlaylist, prefix: string }) => {
+const TreeView = ({ children }: React.PropsWithChildren<unknown>) => {
+  return (
+    <>
+      {children}
+    </>
+  )
+};
+
+const TreeItem = ({ id, name, children }: React.PropsWithChildren<{ id: string, name: string }>) => {
+  const [expanded, setExpanded] = React.useState<boolean>(false);
+  const store = useStore();
+
+  const Icon = children ? FolderIcon : ListIcon;
+  const select: () => void = children ? () => { } : () => {
+    console.log('selecting item', 'SharePoint/' + id);
+    store.selectItem(id);
+  };
+
+  return (
+    <div className="pl-4 mt-2">
+      <div className="flex gap-2 items-start">
+        <Icon className="size-4 flex-shrink-0 mt-1" />
+        <button className="btn btn-ghost text-left size-fit px-1" onClick={select}>{name}</button>
+      </div>
+      <div>
+        {children}
+      </div>
+    </div>
+  )
+}
+
+const PlaylistNode = ({ item, prefix }: { item: proto.rv.data.IPlaylist, prefix: string }) => {
   let children: React.JSX.Element[] | null = null;
   const itemId = `${prefix}/${item.uuid?.string ?? 'no-name'}`;
 
@@ -25,20 +57,17 @@ const PlaylistNode = ({ item, prefix, }: { item: proto.rv.data.IPlaylist, prefix
     children = item.playlists.playlists.map(p => (<PlaylistNode key={p.uuid?.string} item={p} prefix={prefix} />))
   }
 
+  console.log('playlist node', prefix, item);
   return (
-    // <TreeItem itemId={itemId} label={item.name ?? 'no-name'} style={{ color: 'navy' }}>{children}</TreeItem>
-    <div>PlaylistNode</div>
+    <TreeItem id={itemId} name={item.name ?? 'no-name'}>{children}</TreeItem>
   )
 };
 
-const Playlist = ({ playlist, prefix, selected, doSelect }: { playlist: proto.rv.data.IPlaylist, prefix: string, selected: string | undefined, doSelect: (id: string) => void }) => {
+const Playlist = ({ playlist, prefix }: { playlist: proto.rv.data.IPlaylist, prefix: string }) => {
   return (
-    <div>TreeView</div>
-    // <SimpleTreeView selectedItems={selected} onSelectedItemsChange={(_, items) => {
-    //   doSelect(items ?? '')
-    // }}>
-    //   <PlaylistNode item={playlist} prefix={prefix} />
-    // </SimpleTreeView>
+    <TreeView>
+      <PlaylistNode item={playlist} prefix={prefix} />
+    </TreeView>
   );
 };
 
@@ -50,11 +79,11 @@ const PlaylistViewContent = observer(({ preview }: { preview: PlaylistPreview })
       <div>Required Files</div>
       <ul className="list bg-base-100 rounded-box shadow-md">
         {preview.checkedFiles.map(f => {
-          const upstreamIcon = !f.upstream ? <SolidCloudArrowIcon /> : f.upstream.exists ? <SolidCloudIcon /> : <OutlineCloudIcon />;
-          const downstreamIcon = !f.downstream ? null : f.downstream.exists ? <SolidHomeIcon /> : <OutlineHomeIcon />;
+          const UpstreamIcon = !f.upstream ? SolidCloudArrowIcon : f.upstream.exists ? SolidCloudIcon : OutlineCloudIcon;
+          const DownstreamIcon = !f.downstream ? null : f.downstream.exists ? SolidHomeIcon : OutlineHomeIcon
           const primary = (
-            <div className="flex">
-              {f.name} {upstreamIcon} {downstreamIcon}
+            <div className="flex items-center gap-2">
+              {f.name} {<UpstreamIcon className="size-4" />} {DownstreamIcon && <DownstreamIcon className="size-4" />}
             </div>
           )
           let secondary: string = '';
@@ -84,14 +113,14 @@ const PlaylistView = ({ store, id }: { store: ProPresenterStore, id: string }) =
   React.useEffect(() => {
     store.loadPlaylistPreview(id).then(setP).catch(e => { throw e });
     return () => setP(undefined);
-  }, [id])
+  }, [store, id])
 
   if (!p) return (<div>Loading ...</div>);
 
   return (<PlaylistViewContent preview={p} />);
 };
 
-export const PlaylistsTriplePane = observer(() => {
+const PlaylistsTriplePane = observer(({ children }: React.PropsWithChildren<unknown>) => {
   const store = useStore();
   React.useEffect(() => {
     store.selectItem('');
@@ -102,7 +131,7 @@ export const PlaylistsTriplePane = observer(() => {
     <PanelGroup direction="vertical" style={{ flex: '1 1 auto' }}>
       <Panel minSize={10} style={{ display: 'flex' }}>
         <div className="flex flex-auto min-h-px">
-          <div style={{ width: 200, borderRight: `solid 1px white`, overflowY: 'auto', padding: 8 }}>
+          <div style={{ width: 250, borderRight: `solid 1px white`, overflowY: 'auto', padding: 8 }}>
             <div>SharePoint</div>
             {store.uptreamStore.isLoading ? <div>Loading ...</div> : (
               <>
@@ -111,17 +140,16 @@ export const PlaylistsTriplePane = observer(() => {
             )}
           </div>
           <div className="flex flex-col flex-auto min-h-px p-1">
-            <div>Middle</div>
+            <div>{children}</div>
           </div>
-          <div style={{ width: 200, borderLeft: `solid 1px white`, overflowY: 'auto', padding: 8 }}>
+          <div style={{ width: 250, borderLeft: `solid 1px white`, overflowY: 'auto', padding: 8 }}>
             <div>Local Machine</div>
             <DownstreamGuard forSetup={false} store={store} render={() => (
               store.downstreamStore?.isLoading ? <div>Loading ...</div> : (
                 <>
                   {store.downstreamStore?.playList?.rootNode ? <Playlist playlist={store.downstreamStore.playList.rootNode} prefix={store.downstreamStore.name} selected={store.selectedId} doSelect={store.selectItem} /> : undefined}
                 </>
-              ))
-            } />
+              ))} />
           </div>
         </div>
       </Panel>
@@ -135,23 +163,4 @@ export const PlaylistsTriplePane = observer(() => {
   )
 });
 
-export default function PlaylistsLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
-  return <PlaylistsTriplePane/>
-}
-
-// export const PlaylistsScreen = () => {
-//   return (
-//     <>
-//       <Routes>
-//         <Route Component={PlaylistsTriplePane}>
-//           <Route index Component={TransferMiddlePane} />
-//           <Route path="transfer/*" Component={TransferDialog} />
-//         </Route>
-//       </Routes>
-//     </>
-//   );
-// }
+export default PlaylistsTriplePane;

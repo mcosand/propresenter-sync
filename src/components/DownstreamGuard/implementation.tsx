@@ -2,7 +2,6 @@
 
 import * as React from 'react';
 import { ProPresenterStore } from "@/services/propresenterStore";
-import { ProPresenterRepository } from '@/services/propresenterRepository';
 import { observer } from 'mobx-react-lite';
 import ErrorIcon from '@heroicons/react/24/outline/ExclamationCircleIcon';
 
@@ -16,8 +15,6 @@ const NotSupported = () => (
 );
 
 const DownstreamGuard = observer(({ store, render, forSetup = false }: { forSetup: boolean, store: ProPresenterStore, render: () => React.JSX.Element | null }) => {
-  const [dstore, setDStore] = React.useState<ProPresenterRepository | null>(store.downstreamStore);
-
   async function findFolder() {
     const dirHandle = await window.showDirectoryPicker?.();
     if (!dirHandle) {
@@ -36,16 +33,17 @@ const DownstreamGuard = observer(({ store, render, forSetup = false }: { forSetu
       }
     }
     await store.openDownstream(dirHandle, forSetup);
-    setDStore(store.downstreamStore);
   }
-
-  if (dstore) return render();
+  
+  if (store.downstreamStore) return render();
   if (!window.showDirectoryPicker) return (<NotSupported />)
 
   return (
     <div className="flex flex-col align-center">
       <div>Welcome to the ProPresenter Sync Tool. Start by opening your local ProPresenter folder (this is usually at &quot;Documents/ProPresenter&quot;)</div>
-      <button className="btn btn-primary" onClick={findFolder}>Open Local Folder</button>
+      <form method="dialog" className="mt-4 flex flex-col items-center">
+        <button className="btn btn-primary" onClick={findFolder}>Open Local Folder</button>
+      </form>
     </div>
   )
 });

@@ -88,7 +88,7 @@ class UiStore {
   }
 
   @action.bound
-  toggle(file: string) {
+  update(file: string, value: boolean) {
     if (this.selectedFiles.has(file)) {
       this.selectedFiles.delete(file);
     } else {
@@ -123,48 +123,52 @@ const GuardedTransferDialog = observer(({ store, id }: { store: ProPresenterStor
   }, [uiStore, id]);
 
   return (
-    <dialog id="transfer-dialog" className="modal">
-      <h3>Transfer Playlist {uiStore.title}</h3>
-      <div className="modal-box flex flex-col min-h-px">
-        {uiStore.mustDownloadCount > 0
-          ? <p>This playlist includes {uiStore.mustDownloadCount} files that are not on the target machine. You can select additional files to get a refreshed copy.</p>
-          : <p>You have all of the files in this playlist. You can transfer fresh copies of files by selecting them below.</p>
+    <dialog id="transfer-dialog" className="modal" open>
+      <div className="modal-box flex flex-col max-w-2xl max-h-[95vh]">
+        <h3 className="font-bold text-lg">Transfer Playlist {uiStore.title}</h3>
+        <div className="flex flex-col min-h-px py-3">
+          {uiStore.mustDownloadCount > 0
+            ? <p>This playlist includes {uiStore.mustDownloadCount} files that are not on the target machine. You can select additional files to get a refreshed copy.</p>
+            : <p>You have all of the files in this playlist. You can transfer fresh copies of files by selecting them below.</p>
+          }
+          <div className="flex-auto overflow-y-auto">
+            {uiStore.isLoading && <div><h4>Loading...</h4></div>}
+            <ul className="list bg-base-100 rounded-box shadow-md">
+              {uiStore.files.map(file => {
+                return (<li key={file.name} className="list-row">
+                  <div>
+                    <input type="checkbox"
+                      disabled={!!file.mustDownload}
+                      checked={!!file.toDownload || !!file.mustDownload}
+                      onChange={evt => uiStore.update(file.name, evt.currentTarget.checked)}
+                    />
+                  </div>
+                  <div>{file.name} {formatBytes(file.size)}</div>
+                </li>
+                )
+              })}
+            </ul>
+          </div>
+          <div className="mt-2"><p>{uiStore.transferProgress?.task ?? `${uiStore.actionText} ${formatBytes(uiStore.downloadSize)}`}</p></div>
+        </div>
+        {uiStore.transferProgress?.task === 'Finished' ?
+          <div className="modal-action">
+            <form method="dialog">
+              <Link href="/playlists">
+                {/* if there is a button in form, it will close the modal */}
+                <button className="btn" >Close</button>
+              </Link>
+            </form>
+          </div>
+          :
+          <div className="modal-action">
+            <form method="dialog" className="flex gap-2">
+              <Link className={`btn ${uiStore.transferProgress ? 'btn-disabled' : ''}`} href="/playlists">Cancel</Link>
+              <button className="btn btn-primary" disabled={!uiStore.canTransfer} onClick={() => uiStore.doTransfer()}>{uiStore.actionText}</button>
+            </form>
+          </div>
         }
-        <div className="flex-auto overflow-y-auto">
-          {uiStore.isLoading && <div><h4>Loading...</h4></div>}
-          <ul className="list bg-base-100 rounded-box shadow-md">
-            {uiStore.files.map(file => {
-              return (<li key={file.name} className="list-row">
-                <div>
-                  <input type="checkbox"
-                    checked={!!file.toDownload || !!file.mustDownload}
-                  />
-                </div>
-                <div>{file.name} {formatBytes(file.size)}</div>
-              </li>
-              )
-            })}
-          </ul>
-        </div>
-        <div className="mt-2"><p>{uiStore.transferProgress?.task ?? `${uiStore.actionText} ${formatBytes(uiStore.downloadSize)}`}</p></div>
       </div>
-      {uiStore.transferProgress?.task === 'Finished' ?
-        <div className="modal-action">
-          <form method="dialog">
-            <Link href="/playlists">
-              {/* if there is a button in form, it will close the modal */}
-              <button className="btn" >Close</button>
-            </Link>
-          </form>
-        </div>
-        :
-        <div className="modal-action">
-          <form method="dialog">
-            <Link className={`btn ${uiStore.transferProgress ? 'btn-disabled' : ''}`} href="/playlists">Cancel</Link>
-            <button className="btn btn-primary" disabled={!uiStore.canTransfer} onClick={() => uiStore.doTransfer()}>{uiStore.actionText}</button>
-          </form>
-        </div>
-      }
     </dialog>
   );
 });
@@ -174,7 +178,7 @@ export const TransferDialog = observer(({ id }: { id: string }) => {
 
   if (!store.downstreamStore) {
     return (
-      <dialog id="guardModal" className="modal">
+      <dialog id="guardModal" className="modal" open>
         <div className="modal-box">
           <DownstreamGuard forSetup={false} store={store} render={() => (<div>Loading ...</div>)} />
         </div>

@@ -8,7 +8,7 @@ const TransferMiddlePane = observer(() => {
   const store = useStore();
   return (<>
     {(store.downstreamStore !== null && store.selectedItem?.type === 'playlist') ? (
-      <Link href={`transfer/${store.selectedId}`}>
+      <Link href={`/playlists/transfer/${store.selectedId}`}>
         <button className="btn btn-primary">{store.selectedId.startsWith(store.uptreamStore.name) ? 'Download' : 'Upload'}</button>
       </Link>
       

@@ -257,11 +257,11 @@ export class ProPresenterRepository {
         folderList = await this.listFiles(folder);
         folderContents[folder] = folderList;
       }
-      console.log('aa', filename, folder, folderList);
+ //     console.log('aa', filename, folder, folderList);
       if (!fileStatus.find(f => f.name === filename)) {
-        console.log('bb');
+ //       console.log('bb');
         const file = folderList.find(f => f.name === filename);
-        console.log('cc', file);
+ //       console.log('cc', file);
         fileStatus.push({
           name: filename,
           exists: !!file,
@@ -270,7 +270,7 @@ export class ProPresenterRepository {
         });
       }
     }
-          console.log('folderContents', folderContents);
+ //         console.log('folderContents', folderContents);
     return fileStatus;
   }
 
