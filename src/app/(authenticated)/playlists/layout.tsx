@@ -9,7 +9,6 @@ import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels';
 import DownstreamGuard from '@/components/DownstreamGuard';
 import { formatBytes, formatDateTime } from '@/lib/format';
 import { useStore } from '@/components/StoreProvider';
-import Link from 'next/link';
 import OutlineCloudIcon from '@heroicons/react/24/outline/CloudIcon';
 import SolidCloudIcon from '@heroicons/react/24/solid/CloudIcon';
 import SolidCloudArrowIcon from '@heroicons/react/24/solid/CloudArrowUpIcon';
@@ -27,7 +26,6 @@ const TreeView = ({ children }: React.PropsWithChildren<unknown>) => {
 };
 
 const TreeItem = ({ id, name, children }: React.PropsWithChildren<{ id: string, name: string }>) => {
-  const [expanded, setExpanded] = React.useState<boolean>(false);
   const store = useStore();
 
   const Icon = children ? FolderIcon : ListIcon;
@@ -135,7 +133,7 @@ const PlaylistsTriplePane = observer(({ children }: React.PropsWithChildren<unkn
             <div>SharePoint</div>
             {store.uptreamStore.isLoading ? <div>Loading ...</div> : (
               <>
-                {store.uptreamStore.playList?.rootNode ? <Playlist playlist={store.uptreamStore.playList.rootNode} prefix={store.uptreamStore.name} selected={store.selectedId} doSelect={store.selectItem} /> : null}
+                {store.uptreamStore.playList?.rootNode ? <Playlist playlist={store.uptreamStore.playList.rootNode} prefix={store.uptreamStore.name} /> : null}
               </>
             )}
           </div>
@@ -147,7 +145,7 @@ const PlaylistsTriplePane = observer(({ children }: React.PropsWithChildren<unkn
             <DownstreamGuard forSetup={false} store={store} render={() => (
               store.downstreamStore?.isLoading ? <div>Loading ...</div> : (
                 <>
-                  {store.downstreamStore?.playList?.rootNode ? <Playlist playlist={store.downstreamStore.playList.rootNode} prefix={store.downstreamStore.name} selected={store.selectedId} doSelect={store.selectItem} /> : undefined}
+                  {store.downstreamStore?.playList?.rootNode ? <Playlist playlist={store.downstreamStore.playList.rootNode} prefix={store.downstreamStore.name} /> : undefined}
                 </>
               ))} />
           </div>

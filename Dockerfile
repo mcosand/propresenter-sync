@@ -13,7 +13,7 @@ RUN npm ci
 COPY . .
 
 # Build Next.js
-RUN npm run build && npm prune --production
+RUN npm run build && npm prune --omit=dev
 
 # Stage 2: Production runtime
 FROM node:20-alpine AS runner
