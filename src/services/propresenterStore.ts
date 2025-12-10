@@ -8,6 +8,7 @@ import { PresentationPreview } from "@/models/preview/presentationPreview";
 import { FileStorageStatus, PlaylistPreview } from '@/models/preview/playlistPreview';
 import { joinPath } from "./platforms";
 import { MediaFinder, FinderVisitor, RemoveAbsoluteUrls, UrlResolver } from "@/lib/visitor";
+import { formatBytes } from "@/lib/format";
 
 export type ObjectType = 'playlistFolder' | 'playlist' | 'mediaInfo' | 'mediaContent' | 'library' | 'presentation';
 
@@ -314,7 +315,7 @@ export class ProPresenterStore {
     }
 
     await this.downloadFiles(srcRepo, targetRepo, includeFiles, {
-      progress: (fileAndSize) => progress(fileAndSize.path)
+      progress: (fileAndSize) => progress(`${fileAndSize.path} (${formatBytes(fileAndSize.size)})`)
     });
 
     const srcMediaDoc = await srcRepo.getMediaDoc();
