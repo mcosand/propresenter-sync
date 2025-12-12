@@ -101,7 +101,7 @@ class UiStore {
     this.transferProgress = { task: 'Starting ...' };
     await this.store.transferPlaylist(
       this.id,
-      this.files.filter(f => f.mustDownload || this.selectedFiles.has(f.name)).map(f => f.name),
+      this.files.filter(f => f.mustDownload || this.selectedFiles.has(f.name)).map(f => ({ name: f.name, size: f.size})),
       this.updateTransferProgress
     );
     runInAction(() => {

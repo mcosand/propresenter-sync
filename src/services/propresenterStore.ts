@@ -80,41 +80,41 @@ export class ProPresenterStore {
     this.selectedId = item;
   }
 
-  private async downloadFiles(fromRepo: ProPresenterRepository, toRepo: ProPresenterRepository, files: string[], opts?: {
+  private async downloadFiles(fromRepo: ProPresenterRepository, toRepo: ProPresenterRepository, files: Array<{ name: string, size: number }>, opts?: {
     progress?: (file: { path: string, size: number }) => void,
   }): Promise<void> {
     let fromMediaDoc: proto.rv.data.PlaylistDocument | undefined;
     let toMediaDoc: proto.rv.data.PlaylistDocument | undefined;
 
     for (const file of files) {
-      opts?.progress?.({ path: file, size: 0 });
-      if (file.startsWith('Library/')) {
-        const presentation = await fromRepo.loadPresentation(file);
+      opts?.progress?.({ path: file.name, size: 0 });
+      if (file.name.startsWith('Library/')) {
+        const presentation = await fromRepo.loadPresentation(file.name);
         RemoveAbsoluteUrls.clean(presentation);
-        await toRepo.writeProtoFile(file, presentation, proto.rv.data.Presentation.encode);
-      } else if (file.startsWith('Themes/') && file.endsWith('/Theme')) {
-        const themeDoc = await fromRepo.readProtoFile(file, proto.rv.data.Template.Document.decode);
+        await toRepo.writeProtoFile(file.name, presentation, proto.rv.data.Presentation.encode);
+      } else if (file.name.startsWith('Themes/') && file.name.endsWith('/Theme')) {
+        const themeDoc = await fromRepo.readProtoFile(file.name, proto.rv.data.Template.Document.decode);
         RemoveAbsoluteUrls.clean(themeDoc);
-        await toRepo.writeProtoFile(file, themeDoc, proto.rv.data.Template.Document.encode);
-      } else if (file === 'Configuration/Workspace') {
-        const workspaceDoc = await fromRepo.readProtoFile(file, proto.rv.data.ProPresenterWorkspace.decode);
+        await toRepo.writeProtoFile(file.name, themeDoc, proto.rv.data.Template.Document.encode);
+      } else if (file.name === 'Configuration/Workspace') {
+        const workspaceDoc = await fromRepo.readProtoFile(file.name, proto.rv.data.ProPresenterWorkspace.decode);
         if (workspaceDoc) {
           workspaceDoc.recordSettings = null;
-          await toRepo.writeProtoFile(file, workspaceDoc, proto.rv.data.ProPresenterWorkspace.encode);
+          await toRepo.writeProtoFile(file.name, workspaceDoc, proto.rv.data.ProPresenterWorkspace.encode);
         }
       } else {
-        const srcStream = await fromRepo.getFileStream(file);
-        await toRepo.uploadFile(file, srcStream, bytes => opts?.progress?.({ path: file, size: bytes }));
-        if (file.startsWith('Media/')) {
+        const srcStream = await fromRepo.getFileStream(file.name);
+        await toRepo.uploadFile(file.name, file.size, srcStream, bytes => opts?.progress?.({ path: file.name, size: bytes }));
+        if (file.name.startsWith('Media/')) {
           if (!fromMediaDoc || !toMediaDoc) {
             [fromMediaDoc, toMediaDoc] = await Promise.all([fromRepo.getMediaDoc(), toRepo.getMediaDoc()]);
             if (!fromMediaDoc || !toMediaDoc) {
               throw new Error('cant find media playlists');
             }
           }
-          const existingTargetMediaRef = MediaFinder.find(file, fromMediaDoc);
+          const existingTargetMediaRef = MediaFinder.find(file.name, fromMediaDoc);
           if (!existingTargetMediaRef) {
-            const srcMediaRef = MediaFinder.find(file, toMediaDoc);
+            const srcMediaRef = MediaFinder.find(file.name, toMediaDoc);
             if (srcMediaRef) {
               RemoveAbsoluteUrls.clean(srcMediaRef);
               await toRepo.insertMediaReference(srcMediaRef);
@@ -129,9 +129,9 @@ export class ProPresenterStore {
     progress?: (file: { path: string, size: number }) => void,
     filter?: (path: string) => boolean
   }): Promise<void> {
-    let list = (await this.uptreamStore.listFiles(relativePath, true)).map(f => f.name);
+    let list = (await this.uptreamStore.listFiles(relativePath, true)).map(f => ({ name: f.name, size: f.size }));
     if (opts?.filter) {
-      list = list.filter(opts.filter);
+      list = list.filter(f => opts.filter?.(f.name));
     }
     await this.downloadFiles(this.uptreamStore, this.downstreamStore!, list, opts);
   }
@@ -307,7 +307,7 @@ export class ProPresenterStore {
     return updatedChecked;
   }
 
-  async transferPlaylist(id: string, includeFiles: string[], progress: (name: string) => void): Promise<void> {
+  async transferPlaylist(id: string, includeFiles: Array<{ name: string, size: number }>, progress: (name: string) => void): Promise<void> {
     const { repo: srcRepo, repoPath: uuid } = this.toRepoPath(id);
     const targetRepo = id.startsWith(this.uptreamStore.name) ? this.downstreamStore! : this.uptreamStore;
     if (!srcRepo || !targetRepo) {

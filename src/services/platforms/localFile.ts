@@ -32,7 +32,7 @@ class LocalFileReference implements FileReference {
     return file.stream();
   }
 
-  async putStream(stream: ReadableStream<Uint8Array>, progress?: (bytes: number) => void): Promise<void> {
+  async putStream(stream: ReadableStream<Uint8Array>, size: number, progress?: (bytes: number) => void): Promise<void> {
     const writable = await this.fileHandle.createWritable();
     const reader = stream.getReader();
     let bytes = 0;

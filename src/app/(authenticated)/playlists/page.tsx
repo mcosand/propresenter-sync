@@ -11,7 +11,6 @@ const TransferMiddlePane = observer(() => {
       <Link href={`/playlists/transfer/${store.selectedId}`}>
         <button className="btn btn-primary">{store.selectedId.startsWith(store.uptreamStore.name) ? 'Download' : 'Upload'}</button>
       </Link>
-      
     ) : null}
   </>);
 });

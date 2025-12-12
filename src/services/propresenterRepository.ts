@@ -313,9 +313,9 @@ export class ProPresenterRepository {
     return file.getStream();
   }
 
-  async uploadFile(relativePath: string, stream: ReadableStream<Uint8Array>, progress?: (bytes: number) => void): Promise<void> {
+  async uploadFile(relativePath: string, size: number, stream: ReadableStream<Uint8Array>, progress?: (bytes: number) => void): Promise<void> {
     const file = await this.rootRef.getFile(relativePath, { create: true });
-    await file.putStream(stream, progress);
+    await file.putStream(stream, size, progress);
   }
   
   // async loadShow(playlist: proto.rv.data.IPlaylist): Promise<Show> {

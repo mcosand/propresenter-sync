@@ -1,17 +1,17 @@
 import { ApiSharepointFile } from '@/models/api';
 import type { FileReference, FolderReference } from '.';
+import { CHUNK_SIZE } from '@/app/api/sharepoint/upload/route';
 
 export class SharePointAuth {
   static accessToken: string = '';
 }
-
 class SharePointFile implements FileReference {
   readonly kind = 'file' as const;
   readonly name: string;
   readonly relativePath: string;
   private metadata: { size?: number; modified?: number } = {};
 
-  constructor(name: string, relativePath: string, metadata: { size?: number, modified?: number}) {
+  constructor(name: string, relativePath: string, metadata: { size?: number, modified?: number }) {
     this.name = name;
     this.relativePath = relativePath;
     this.metadata = metadata;
@@ -64,17 +64,20 @@ class SharePointFile implements FileReference {
   }
 
   async putContents(bytes: ArrayBuffer): Promise<void> {
-    const formData = new FormData();
     const blob = new Blob([bytes]);
-    formData.append('file', blob);
-    formData.append('path', this.relativePath);
 
-    const response = await fetch('/api/sharepoint/file/upload', {
+    if (bytes.byteLength > CHUNK_SIZE) {
+      throw new Error('contents are too large: ' + bytes.byteLength);
+    }
+
+    const response = await fetch('/api/sharepoint/upload', {
       method: 'POST',
-      body: formData,
       headers: {
-        authorization: `Bearer ${SharePointAuth.accessToken}`
-      }
+        'x-filename': encodeURIComponent(this.relativePath),
+        'x-filesize': `${bytes.byteLength}`,
+        'Content-Type': 'application/octet-stream',
+      },
+      body: blob,
     });
 
     if (!response.ok) {
@@ -99,36 +102,113 @@ class SharePointFile implements FileReference {
 
   async putStream(
     stream: ReadableStream<Uint8Array>,
+    size: number,
     progress?: (bytes: number) => void
   ): Promise<void> {
     const reader = stream.getReader();
-    const chunks: Uint8Array[] = [];
-    let totalBytes = 0;
 
-    try {
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        
-        chunks.push(value);
-        totalBytes += value.length;
-        
-        if (progress) {
-          progress(totalBytes);
+    let offset: number = 0;
+    let uploadUrl: string | undefined = undefined;
+    let done = false;
+    while (!done) {
+      const buffers: Uint8Array[] = []; //Uint8Array<ArrayBuffer> = new Uint8Array(Math.min(CHUNK_SIZE, size));
+      let bufferSize = 0;
+      // Read chunks until we have CHUNK_SIZE or stream ends
+      while ((bufferSize < CHUNK_SIZE) && !done) {
+        const { value, done: streamDone } = await reader.read();
+        if (streamDone) {
+          done = true;
+          break;
+        }
+        if (value.byteLength) {
+          buffers.push(value);
+          bufferSize += value.length;
         }
       }
+      if (bufferSize === 0) break;
 
-      const combined = new Uint8Array(totalBytes);
-      let offset = 0;
-      for (const chunk of chunks) {
-        combined.set(chunk, offset);
-        offset += chunk.length;
+      const chunk = new Uint8Array(bufferSize);
+      let position = 0;
+      for (const arr of buffers) {
+        chunk.set(arr, position);
+        position += arr.length;
       }
 
-      await this.putContents(combined.buffer);
-    } finally {
-      reader.releaseLock();
+      const headers: Record<string, string> = {
+        'X-Filename': encodeURIComponent(this.relativePath),
+        'X-Filesize': `${size}`,
+        'X-Fileoffset': `${offset}`,
+        'Content-Type': 'application/octet-stream',
+      }
+      if (uploadUrl) headers['x-upload-url'] = uploadUrl;
+
+      const response = await fetch('/api/sharepoint/upload', {
+        method: 'POST',
+        headers,
+        body: chunk,
+      });
+
+      if (!response.ok && response.status !== 202) {
+        console.log(await response.text())
+        throw new Error(`Upload chunk failed: ${response.statusText}`);
+      }
+      const responseJson = await response.json();
+      if (responseJson.complete) {
+        done = true;
+        break;
+      }
+
+      uploadUrl = responseJson.uploadUrl;
+      if (responseJson.offset !== offset + bufferSize) {
+        throw new Error(`unexpected offset ${offset} + ${bufferSize} vs ${responseJson.offset}`);
+      }
+      offset = responseJson.offset;
+      progress?.(offset ?? 0);
     }
+    // // Create a new ReadableStream that tracks progress
+    // const progressStream = new ReadableStream({
+    //   async start(controller) {
+    //     try {
+    //       while (true) {
+    //         const { done, value } = await reader.read();
+
+    //         if (done) {
+    //           controller.close();
+    //           break;
+    //         }
+
+    //         totalBytes += value.length;
+    //         if (progress) {
+    //           progress(totalBytes);
+    //         }
+
+    //         controller.enqueue(value);
+    //       }
+    //     } catch (error) {
+    //       controller.error(error);
+    //       throw error;
+    //     }
+    //   }
+    // });
+
+
+
+    // const response = await fetch('/api/sharepoint/file/upload', {
+    //   method: 'POST',
+    //   headers: {
+    //     'x-filename': encodeURIComponent(this.relativePath),
+    //     'x-filesize': `${size}`,
+    //     'Content-Type': 'application/octet-stream',
+    //   },
+    //   body: progressStream,
+    //   // @ts-ignore - duplex is needed for streaming but not in types yet
+    //   duplex: 'half',
+    // });
+
+    // if (!response.ok) {
+    //   const error = await response.json();
+    //   throw new Error(error.message || 'Upload failed');
+    // }
   }
 }
 
@@ -191,7 +271,7 @@ class SharePointFolder implements FolderReference {
     }
 
     console.log('creating file reference without metadata');
-    return new SharePointFile(fileName, fullPath, { });
+    return new SharePointFile(fileName, fullPath, {});
   }
 
   async getFolder(relativePath: string): Promise<FolderReference> {

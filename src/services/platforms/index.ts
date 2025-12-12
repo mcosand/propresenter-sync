@@ -7,7 +7,7 @@ export interface FileReference {
   getContents(): Promise<ArrayBuffer>;
   putContents(bytes: ArrayBuffer): Promise<void>;
   getStream(): Promise<ReadableStream<Uint8Array>>;
-  putStream(stream: ReadableStream<Uint8Array>, progress?: (bytes: number) => void): Promise<void>;
+  putStream(stream: ReadableStream<Uint8Array>, size: number, progress?: (bytes: number) => void): Promise<void>;
 }
 
 export interface FolderReference {
