@@ -101,7 +101,7 @@ class UiStore {
     this.transferProgress = { task: 'Starting ...' };
     await this.store.transferPlaylist(
       this.id,
-      this.files.filter(f => f.mustDownload || this.selectedFiles.has(f.name)).map(f => ({ name: f.name, size: f.size})),
+      this.files.filter(f => f.mustDownload || this.selectedFiles.has(f.name)).map(f => ({ name: f.name, size: f.size })),
       this.updateTransferProgress
     );
     runInAction(() => {
@@ -138,7 +138,7 @@ const GuardedTransferDialog = observer(({ store, id }: { store: ProPresenterStor
                 return (<li key={file.name} className="list-row">
                   <div>
                     <input type="checkbox"
-                      disabled={!!file.mustDownload}
+                      disabled={false /*!!file.mustDownload*/}
                       checked={!!file.toDownload || !!file.mustDownload}
                       onChange={evt => uiStore.update(file.name, evt.currentTarget.checked)}
                     />

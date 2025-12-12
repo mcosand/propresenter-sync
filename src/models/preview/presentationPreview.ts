@@ -34,6 +34,18 @@ export class SlidePreview {
   }
 }
 
+const DEFAULT_GROUP_COLORS: Record<string, string> = {
+  Chorus: '#CB024E',
+  'Chorus 1': '#CB024E',
+  'Chorus 2': '#CC044F',
+  'Chorus 3': '#660126',
+  Bridge: '#7600CC',
+  'Verse 2': '#015899',
+  Outro: '#7F7618',
+  Interlude: '#26B34B',
+  Ending: '#998F1E',
+}
+
 export class SlideGroupPreview {
   readonly uuid: string;
   readonly name: string;
@@ -46,7 +58,8 @@ export class SlideGroupPreview {
   }
 
   get color() {
-    return parseColor(this.original.group?.color);
+    const c = this.original.group?.color;
+    return c ? parseColor(c) : (DEFAULT_GROUP_COLORS[this.original.group?.name ?? ''] ?? 'transparent');
   }
 
   get requiredFiles(): proto.rv.data.IURL[] {

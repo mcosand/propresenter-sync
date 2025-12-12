@@ -11,56 +11,63 @@ import { PresentationPreview, SlideGroupPreview } from "@/models/preview/present
 import { NULL_ARRANGEMENT_ID } from "@/models/preview";
 
 const SlideGroupView = ({ group }: { group: SlideGroupPreview }) => {
-  console.log('group', group);
+  console.log('group', group.color, group);
   return (
-    <div style={{position:'relative', borderLeft: '22px solid ' + group.color, paddingLeft: 5, minHeight: 100}}>
-      <div style={{ padding: '2px 6px', fontWeight: 'bold', backgroundColor: group.color, position:'absolute', top: 0, left: 0, transformOrigin: '0 0', transform: 'rotate(90deg)'}}>
+    <div style={{ position: 'relative', borderLeft: '22px solid ' + group.color, paddingLeft: 5, minHeight: 100 }}>
+      <div style={{ padding: '2px 6px', fontWeight: 'bold', backgroundColor: group.color, position: 'absolute', top: 0, left: 0, transformOrigin: '0 0', transform: 'rotate(90deg)' }}>
         {group.name}
       </div>
       <div>
         {group.slides.map((slide, i) => {
-          const isSameNotes = (i > 0 && group.slides[i-1].notes === slide.notes && slide.notes.length > 0);
+          const isSameNotes = (i > 0 && group.slides[i - 1].notes === slide.notes && slide.notes.length > 0);
           return (
             <div key={slide.uuid} className="flex flex-row">
-              <div style={{margin: 5, padding: 5, border: `solid 1px white`, whiteSpace:'pre', position:'relative', minWidth: 100, minHeight: 60 }}>
-                <div style={{color: isSameNotes ? 'transparent' : undefined}}>{slide.notes}</div>
-                {isSameNotes && <div style={{position:'absolute', top:0, left: 0, bottom: 0, right: 0, fontSize:48,fontWeight:'bold',textAlign:'center',paddingTop:20}}>&quot;</div>}
+              <div style={{ margin: 5, padding: 5, border: `solid 1px white`, whiteSpace: 'pre', position: 'relative', minWidth: 100, minHeight: 60 }}>
+                <div style={{ color: isSameNotes ? 'transparent' : undefined }}>{slide.notes}</div>
+                {isSameNotes && <div style={{ position: 'absolute', top: 0, left: 0, bottom: 0, right: 0, fontSize: 48, fontWeight: 'bold', textAlign: 'center', paddingTop: 20 }}>&quot;</div>}
               </div>
-              <div key={slide.uuid} style={{margin: 5, padding: 5, border: `solid 1px white`, whiteSpace:'pre', minWidth: 100, minHeight: 60 }}>
+              <div key={slide.uuid} style={{ margin: 5, padding: 5, border: `solid 1px white`, whiteSpace: 'pre', minWidth: 100, minHeight: 60 }}>
                 {slide.text.join('\n')}
               </div>
             </div>
           )
-      })}
+        })}
       </div>
     </div>
   )
 }
 
 const PresentationPreviewView = ({ store, id }: { store: ProPresenterStore, id: string }): React.JSX.Element => {
-    const [ p, setP ] = React.useState<PresentationPreview>();
-    const [ arrangement, setArrangement ] = React.useState<string>(NULL_ARRANGEMENT_ID);
-    React.useEffect(() => {
-      setArrangement(NULL_ARRANGEMENT_ID);
-      store.loadPresentationPreview(id).then(setP).catch(console.error);
-      return () => setP(undefined);
-    }, [store, id])
+  const [p, setP] = React.useState<PresentationPreview>();
+  const [arrangement, setArrangement] = React.useState<string>(NULL_ARRANGEMENT_ID);
+  React.useEffect(() => {
+    setArrangement(NULL_ARRANGEMENT_ID);
+    store.loadPresentationPreview(id).then(setP).catch(console.error);
+    return () => setP(undefined);
+  }, [store, id])
 
-    console.log('render preview',id, p);
-    console.log('selected arrangement', arrangement, p?.arrangements[arrangement])
-    return p ? (
-      <>
-        {(Object.keys(p.arrangements).length > 1) && <div style={{flexShrink: 0}}>Arrangment bar {JSON.stringify(Object.keys(p.arrangements))}</div>}
-        <div style={{flex: '1 1 auto', overflowY: 'auto', overflowX: 'auto'}}>
-          {p.arrangements[arrangement].map((cueGroupId, i) => {
-            console.log('check', cueGroupId, p.slideGroups);
-            const grp = p.slideGroups[cueGroupId];
-            return (<SlideGroupView key={cueGroupId+'-' +i} group={grp}/>)
-          })}
-        </div>
-      </>
-    ) : <div>Loading ...</div>;
-  return (<div>PresentationPreviewView</div>)
+  console.log('render preview', id, p);
+  console.log('selected arrangement', arrangement, p?.arrangements[arrangement])
+  return p ? (
+    <>
+      <div className="flex flex-row items-center">
+        Arrangement:
+        <select defaultValue={p.arrangements[0]} className="select mx-2" onChange={evt => setArrangement(evt.target.value)}>
+          {Object.keys(p.arrangements).map(a => (
+            <option key={a} value={a}>{a}</option>
+          ))}
+        </select>
+      </div>
+
+      <div style={{ flex: '1 1 auto', overflowY: 'auto', overflowX: 'auto' }}>
+        {p.arrangements[arrangement].map((cueGroupId, i) => {
+          console.log('check', cueGroupId, p.slideGroups);
+          const grp = p.slideGroups[cueGroupId];
+          return (<SlideGroupView key={cueGroupId + '-' + i} group={grp} />)
+        })}
+      </div>
+    </>
+  ) : <div>Loading ...</div>;
 };
 
 const TreeNode = observer(({ item, path, depth }: { item: LibraryItem | LibraryFolder, path: string, depth: number }): React.JSX.Element => {
