@@ -9,7 +9,7 @@ export async function POST(req: Request) {
   }
 
   try {
-    const { path } = await req.json();
+    const { path } = await req.json() as { path: string };
     if (!path) {
       return NextResponse.json({ error: "No path provided" }, { status: 400 });
     }
@@ -21,6 +21,7 @@ export async function POST(req: Request) {
     // Check if the file already exists
     const encodedPath = encodeURIComponent(path);
     const fileExistsResponse = await client
+    
       .api(`/sites/${siteId}/drive/root:/${encodedPath}`)
       .get()
       .catch(() => null);
@@ -30,16 +31,21 @@ export async function POST(req: Request) {
       return NextResponse.json({ message: "File already exists." });
     }
 
+    const pathParts = path.split('/');
+    const filePart = pathParts.pop()!;
+
+    console.log('creating', pathParts, filePart);
     // If file doesn't exist, initiate file creation by uploading a placeholder
     const response = await client
-      .api(`/sites/${siteId}/drive/items/root/children`)
-      .post({
-        name: path.split("/").pop(), // Extract filename from path
-        file: {}, // Empty file object (for placeholders)
-      });
+      .api(`/sites/${siteId}/drive/root:/${pathParts.join('/')}/${encodeURIComponent(filePart)}:/content`)
+      .put(new ArrayBuffer(0));
 
     return NextResponse.json(response);
   } catch (error: any) {
+    if (error.code === 'nameAlreadyExists') {
+      return NextResponse.json({ message: "File already exists"});
+    }
+    console.log('here error', error.message, error);
     console.error("Error creating file:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

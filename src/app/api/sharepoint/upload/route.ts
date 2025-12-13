@@ -23,8 +23,10 @@ export async function POST(request: Request) {
   let uploadUrl = decodeURIComponent(request.headers.get('X-Upload-Url') ?? '');
 
   if (!uploadUrl) {
+    const parts = filename.split('/');
+    const filePart = parts.pop()!;
     const uploadSession = await client
-      .api(`/sites/${siteId}/drive/root:/${filename}:/createUploadSession`)
+      .api(`/sites/${siteId}/drive/root:/${parts.join('/')}/${encodeURIComponent(filePart)}:/createUploadSession`)
       .post({
         item: {
           '@microsoft.graph.conflictBehavior': 'replace',
