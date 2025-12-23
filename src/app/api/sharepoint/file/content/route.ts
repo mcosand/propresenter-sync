@@ -4,6 +4,22 @@ import { getAccessToken } from "@/lib/api";
 import { getGraphClient, getSiteId } from "@/services/graph-helper";
 import { NextResponse } from "next/server";
 
+function toAsciiFilename(input: string) {
+  return input
+    // Normalize to decomposed form (ë → e + ¨)
+    .normalize("NFKD")
+
+    // Remove diacritical marks
+    .replace(/[\u0300-\u036f]/g, "")
+
+    // Remove anything not ASCII
+    .replace(/[^\x00-\x7F]/g, "")
+
+    // Optional: make filesystem-friendly
+    .replace(/[^\w.-]+/g, "_")
+    .replace(/^_+|_+$/g, "");
+}
+
 export async function GET(req: Request) {
   const accessToken = await getAccessToken(req);
   if (!accessToken) {
@@ -29,7 +45,7 @@ export async function GET(req: Request) {
     return new NextResponse(stream, {
       headers: {
         "Content-Type": "application/octet-stream",
-        "Content-Disposition": `attachment; filename="${path.split('/').pop()}"`,
+        "Content-Disposition": `attachment; filename="${toAsciiFilename(path.split('/').pop() ?? 'file')}"`,
       },
     });
   } catch (error: any) {
