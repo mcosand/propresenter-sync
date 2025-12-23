@@ -307,6 +307,20 @@ export class ProPresenterStore {
     return updatedChecked;
   }
 
+  async removePlaylist(id: string) {
+    const { repo, repoPath: uuid } = this.toRepoPath(id);
+    const targetRepo = id.startsWith(this.uptreamStore.name) ? this.downstreamStore! : this.uptreamStore;
+    if (!repo) {
+      throw new Error('invalid repository state');
+    }
+
+    const playlistDoc = await repo.getPlaylistDoc();
+    if (playlistDoc.rootNode?.playlists?.playlists) {
+      playlistDoc.rootNode.playlists.playlists = playlistDoc.rootNode?.playlists?.playlists?.filter(f => f.uuid?.string?.toLowerCase() !== uuid.toLowerCase()) ?? [];
+      await repo.writeProtoFile('Playlists/Library', playlistDoc, proto.rv.data.PlaylistDocument.encode);
+    }
+  }
+
   async transferPlaylist(id: string, includeFiles: Array<{ name: string, size: number }>, progress: (name: string) => void): Promise<void> {
     const { repo: srcRepo, repoPath: uuid } = this.toRepoPath(id);
     const targetRepo = id.startsWith(this.uptreamStore.name) ? this.downstreamStore! : this.uptreamStore;
@@ -336,5 +350,6 @@ export class ProPresenterStore {
     }
 
     await targetRepo.insertPlaylist('shows', playlist);
+    targetRepo.reload();
   }
 }

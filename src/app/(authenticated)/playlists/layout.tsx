@@ -30,7 +30,7 @@ const TreeItem = ({ id, name, children }: React.PropsWithChildren<{ id: string, 
 
   const Icon = children ? FolderIcon : ListIcon;
   const select: () => void = children ? () => { } : () => {
-    console.log('selecting item', 'SharePoint/' + id);
+    console.log('selecting item', id);
     store.selectItem(id);
   };
 
