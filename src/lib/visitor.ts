@@ -138,7 +138,7 @@ export class TreeUpserter<T extends { uuid?: { string?: string|null}|null }> ext
   protected override visitNode(_key: string, value: unknown, parent: unknown): boolean {
     if (value instanceof this.type && value.uuid?.string && (value.uuid?.string.toLowerCase() === this.item.uuid?.string?.toLowerCase()) && Array.isArray(parent)) {
       const list = parent as Array<T>;
-      list[list.indexOf(value)] = value;
+      list[list.indexOf(value)] = this.item;
       this.found = true;
     }
     return !this.found;   

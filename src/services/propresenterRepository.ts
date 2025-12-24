@@ -162,7 +162,6 @@ export class ProPresenterRepository {
       console.error(err);
       throw err;
     }
-    
   }
 
   private indexPlaylist(collection: 'shows' | 'media', node: proto.rv.data.IPlaylist | null | undefined): void {
