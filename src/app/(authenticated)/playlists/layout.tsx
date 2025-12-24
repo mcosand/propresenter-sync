@@ -137,8 +137,8 @@ const PlaylistsTriplePane = observer(({ children }: React.PropsWithChildren<unkn
               </>
             )}
           </div>
-          <div className="flex flex-col flex-auto min-h-px p-1">
-            <div>{children}</div>
+          <div className="flex flex-col flex-auto min-h-px p-1 overflow-y-auto">
+            {children}
           </div>
           <div style={{ width: 250, borderLeft: `solid 1px white`, overflowY: 'auto', padding: 8 }}>
             <div>Local Machine</div>
