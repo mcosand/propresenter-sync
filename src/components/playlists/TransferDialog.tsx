@@ -122,35 +122,49 @@ const GuardedTransferDialog = observer(({ store, id }: { store: ProPresenterStor
     uiStore.setId(id).catch(err => console.error(err));
   }, [uiStore, id]);
 
+  function selectAll() {
+    uiStore.files.forEach(f => uiStore.update(f.name, true));
+  }
+
+  const content = uiStore.isLoading ? (
+    <div className="flex flex-col min-h-px py-3">
+      <div className="flex-auto overflow-y-auto">
+        <h4>Loading...</h4>
+      </div>
+    </div>
+  ) : (
+    <div className="flex flex-col min-h-px py-3">
+      {uiStore.mustDownloadCount > 0
+        ? <p>This playlist includes {uiStore.mustDownloadCount} files that are not on the target machine. You can select additional files to get a refreshed copy.</p>
+        : <p>You have all of the files in this playlist. You can transfer fresh copies of files by selecting them below.</p>
+      }
+      <div className="flex-auto overflow-y-auto">
+        <ul className="list bg-base-100 rounded-box shadow-md">
+          <button className="btn btn-sm btn-soft" onClick={selectAll}>Select All</button>
+          {uiStore.files.map(file => {
+            return (<li key={file.name} className="list-row">
+              <div>
+                <input type="checkbox"
+                  disabled={false /*!!file.mustDownload*/}
+                  checked={!!file.toDownload || !!file.mustDownload}
+                  onChange={evt => uiStore.update(file.name, evt.currentTarget.checked)}
+                />
+              </div>
+              <div>{file.name} {formatBytes(file.size)}</div>
+            </li>
+            )
+          })}
+        </ul>
+      </div>
+      <div className="mt-2"><p>{uiStore.transferProgress?.task ?? `${uiStore.actionText} ${formatBytes(uiStore.downloadSize)}`}</p></div>
+    </div>
+  );
+
   return (
     <dialog id="transfer-dialog" className="modal" open>
       <div className="modal-box flex flex-col max-w-2xl max-h-[95vh]">
         <h3 className="font-bold text-lg">Transfer Playlist {uiStore.title}</h3>
-        <div className="flex flex-col min-h-px py-3">
-          {uiStore.mustDownloadCount > 0
-            ? <p>This playlist includes {uiStore.mustDownloadCount} files that are not on the target machine. You can select additional files to get a refreshed copy.</p>
-            : <p>You have all of the files in this playlist. You can transfer fresh copies of files by selecting them below.</p>
-          }
-          <div className="flex-auto overflow-y-auto">
-            {uiStore.isLoading && <div><h4>Loading...</h4></div>}
-            <ul className="list bg-base-100 rounded-box shadow-md">
-              {uiStore.files.map(file => {
-                return (<li key={file.name} className="list-row">
-                  <div>
-                    <input type="checkbox"
-                      disabled={false /*!!file.mustDownload*/}
-                      checked={!!file.toDownload || !!file.mustDownload}
-                      onChange={evt => uiStore.update(file.name, evt.currentTarget.checked)}
-                    />
-                  </div>
-                  <div>{file.name} {formatBytes(file.size)}</div>
-                </li>
-                )
-              })}
-            </ul>
-          </div>
-          <div className="mt-2"><p>{uiStore.transferProgress?.task ?? `${uiStore.actionText} ${formatBytes(uiStore.downloadSize)}`}</p></div>
-        </div>
+        {content}
         {uiStore.transferProgress?.task === 'Finished' ?
           <div className="modal-action">
             <form method="dialog">
