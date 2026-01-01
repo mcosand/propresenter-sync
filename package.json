@@ -19,7 +19,7 @@
     "@types/node": "^24",
     "@types/react": "19.2.7",
     "@types/react-dom": "19.2.3",
-    "autoprefixer": "^10.4.21",
+    "autoprefixer": "^10.4.23",
     "baseline-browser-mapping": "^2.9.5",
     "daisyui": "^5.5.5",
     "deep-equal": "^2.2.3",
