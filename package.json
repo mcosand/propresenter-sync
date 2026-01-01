@@ -16,7 +16,7 @@
     "@microsoft/microsoft-graph-client": "^3.0.7",
     "@tailwindcss/postcss": "^4.1.17",
     "@types/deep-equal": "^1.0.4",
-    "@types/node": "^24",
+    "@types/node": "^25",
     "@types/react": "19.2.7",
     "@types/react-dom": "19.2.3",
     "autoprefixer": "^10.4.21",
